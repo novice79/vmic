@@ -1,34 +1,45 @@
 # VM in Container
 
-Obviously you need run container with --privileged, and mount bus peripherals. And because of docker cgroup limitation, there is not a easy way run systemd with docker image, so I switch to podman
+Run preinstalled kvm os[xml + qcow2 files] in container
+
+Obviously you need run container with --privileged, and mount bus peripherals.   
+And because of docker cgroup limitation, there is not a easy way run systemd with docker image, so I switch to podman
 
 # Prerequisite
 
-KVM capable host with podman installed
+1. KVM capable host with podman installed
+2. Preinstalled qcow2 file(s) + virsh dumped xml in same dir, lisk this:
+
+    win11/  
+    ├── win11.qcow2  
+    └── win11.xml  
+
+3. And then run this image with mounted os dir to container /vms
 
 # Usage
 
-install podman and then run:
+With podman installed and then run:
 
     podman run \
     --privileged \
     -d --name vmic \
     -v /dev/kvm:/dev/kvm \
     -v /dev/bus/usb:/dev/bus/usb \
-    -v /data/github/vmic/macos12:/vms \
+    -v /data/vms/macos12:/vms \
     -p 5900:5900 \
     novice/vmic
 
-if need pci or usb passthrough, run it like this:
+If need pci or usb passthrough, run it like this:
 
-    podman run \
+    sudo podman run \
     --privileged \
     -e PCI='01:00.0 01:00.1' \
     -e USB='8087:0a2a 04f2:b512' \
     -d --name vmic \
     -v /dev/kvm:/dev/kvm \
     -v /dev/bus/usb:/dev/bus/usb \
-    -v /data/github/vmic/macos12:/vms \
+    -v /data/vms/win11:/vms \
+    -p 2222:22 \
     -p 5900:5900 \
     novice/vmic
 
