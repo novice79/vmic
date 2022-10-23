@@ -11,8 +11,10 @@ And because of docker cgroup limitation, there is not a easy way run systemd wit
 2. Preinstalled qcow2 file(s) + virsh dumped xml in same dir, lisk this:
 
     win11/  
-    ├── win11.qcow2  
-    └── win11.xml  
+    ├── OVMF_CODE_4M.ms.fd
+    ├── win11.qcow2
+    ├── win11_VARS.fd
+    └── win11.xml
 
 3. And then run this image with mounted os dir to container /vms
 
