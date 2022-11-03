@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import xml.etree.ElementTree as ET
-import os.path
+import os
 import sys
 import re
 from jinja2 import Environment, FileSystemLoader
@@ -9,7 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 if len(sys.argv) != 3:
     print("Need in/out xml file name to process")
     sys.exit(1)
-PCI, USB = None, None
+PCI, USB, PORT = None, None, None
 env = open('/proc/1/environ', 'r')
 for e in env.read().split("\0"):
     kv = e.split('=')
@@ -20,6 +20,9 @@ for e in env.read().split("\0"):
     if kv[0] == 'USB':
         USB = kv[1]
         print("USB=" + USB)
+    if kv[0] == 'PORT':
+        PORT = kv[1]
+        print("PORT=" + PORT)
 env.close()
 
 vm_path = "/vms/"
@@ -60,6 +63,12 @@ devices = root.find('devices')
 for d in root.findall('./devices/hostdev'):
     devices.remove(d)
 
+for c in devices:
+    # ga stand for guest address
+    ga = c.find('address')
+    if ga is not None:
+        c.remove(ga)
+
 environment = Environment(loader=FileSystemLoader("/tmpl/"))
 # -e PCI='01:00.0.on 01:00.1' -e USB='8087:0a2a 04f2:b512'
 # PCI = os.getenv('PCI')
@@ -89,3 +98,12 @@ if USB is not None:
         devices.append(ET.XML(pci_host_dev))
 
 tree.write(sys.argv[2])
+pf_script = "/pf.sh"
+if PORT is None:
+    PORT = '22'
+tmpl = environment.get_template("pf.sh")
+nft = tmpl.render( ports = PORT )   
+f = open(pf_script, "w")
+f.write(nft)
+f.close()
+os.chmod(pf_script, 0o755)

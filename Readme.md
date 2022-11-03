@@ -31,17 +31,19 @@ With podman installed and then run:
     -p 5900:5900 \
     novice/vmic
 
-If need pci or usb passthrough, run it like this:
+If need pci or usb passthrough plus port forwarding to guest, run it like this:
 
     sudo podman run \
     --privileged \
     -e PCI='01:00.0 01:00.1' \
     -e USB='8087:0a2a 04f2:b512' \
+    -e PORT='22,3389' \
     -d --name vmic \
     -v /dev/kvm:/dev/kvm \
     -v /dev/bus/usb:/dev/bus/usb \
     -v /data/vms/win11:/vms \
     -p 2222:22 \
+    -p 3389:3389 \
     -p 5900:5900 \
     novice/vmic
 
