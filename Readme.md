@@ -3,42 +3,45 @@
 Run preinstalled kvm os[xml + qcow2 files] in container
 
 Obviously you need run container with --privileged, and mount bus peripherals.   
-And because of docker cgroup limitation, there is not a easy way run systemd with docker image, so I switch to podman
+
 
 # Prerequisite
 
-1. KVM capable host with podman installed
+1. KVM capable host with docker installed
 2. Preinstalled qcow2 file(s) + virsh dumped xml in same dir, lisk this:
 
     win11/  
-    ├── OVMF_CODE_4M.ms.fd
-    ├── win11.qcow2
-    ├── win11_VARS.fd
-    └── win11.xml
+    ├── OVMF_CODE_4M.ms.fd  
+    ├── win11.qcow2  
+    ├── win11_VARS.fd  
+    └── win11.xml  
 
 3. And then run this image with mounted os dir to container /vms
 
 # Usage
 
-With podman installed and then run:
-
-    podman run \
+    docker run \
+    --pull always \
     --privileged \
     -d --name vmic \
+    --cgroupns=host \
+    -v /run/udev:/run/udev:ro \
     -v /dev/kvm:/dev/kvm \
     -v /dev/bus/usb:/dev/bus/usb \
-    -v /data/vms/macos12:/vms \
+    -v /data/github/vmic/win7x64:/vms \
     -p 5900:5900 \
     novice/vmic
 
 If need pci or usb passthrough plus port forwarding to guest, run it like this:
 
-    sudo podman run \
+    docker run \
     --privileged \
     -e PCI='01:00.0 01:00.1' \
     -e USB='8087:0a2a 04f2:b512' \
     -e PORT='22,3389' \
     -d --name vmic \
+    --cgroupns=host \
+    -v /run/udev:/run/udev:ro \
     -v /dev/kvm:/dev/kvm \
     -v /dev/bus/usb:/dev/bus/usb \
     -v /data/vms/win11:/vms \
@@ -47,10 +50,30 @@ If need pci or usb passthrough plus port forwarding to guest, run it like this:
     -p 5900:5900 \
     novice/vmic
 
-and then use vnc viewer connect to host 5900 port
+If need passthrough Intel GVT-g or nvidia vGPU, and set cpu or memory capacity, or spice|vnc password  
+run command some thing like this:
+
+    docker run \
+    --privileged \
+    -e CPU='8' \
+    -e RAM='8G' \
+    -e VGPU='79e66c46-b15e-4f21-9431-007c23c1cf9e' \
+    -e PASS='letmein' \
+    -d --name vmic \
+    --cgroupns=host \
+    -v /run/udev:/run/udev:ro \
+    -v /dev/kvm:/dev/kvm \
+    -v /dev/bus/usb:/dev/bus/usb \
+    -v /data/vms/win11:/vms \
+    -p 5900:5900 \
+    novice/vmic
+
+FYI. ram unit can be G | M | K, e.g. 8G or 8192M or 8388608K
+
+and then use vnc/remote viewer connect to host 5900 port
 
 # Show start logs
 
-    podman exec -it vmic journalctl -u init
+    docker logs vmic 
 
     

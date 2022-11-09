@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-podman build -t docker.io/novice/vmic .
+docker build --pull -t novice/vmic .
 
-# podman tag localhost/novice/vmic docker.io/novice/vmic
-podman push docker.io/novice/vmic
+docker push novice/vmic:latest

@@ -9,7 +9,8 @@ from jinja2 import Environment, FileSystemLoader
 if len(sys.argv) != 3:
     print("Need in/out xml file name to process")
     sys.exit(1)
-PCI, USB, PORT = None, None, None
+PCI, USB, PORT, CPU, RAM, VGPU = None, None, None, None, None, None
+PASS = None
 env = open('/proc/1/environ', 'r')
 for e in env.read().split("\0"):
     kv = e.split('=')
@@ -23,6 +24,18 @@ for e in env.read().split("\0"):
     if kv[0] == 'PORT':
         PORT = kv[1]
         print("PORT=" + PORT)
+    if kv[0] == 'CPU':
+        CPU = kv[1]
+        print("CPU=" + CPU)
+    if kv[0] == 'RAM':
+        RAM = kv[1]
+        print("RAM=" + RAM)
+    if kv[0] == 'VGPU':
+        VGPU = kv[1]
+        print("VGPU=" + VGPU)
+    if kv[0] == 'PASS':
+        PASS = kv[1]
+        print("PASS=" + PASS)
 env.close()
 
 vm_path = "/vms/"
@@ -96,7 +109,38 @@ if USB is not None:
         )
         print(pci_host_dev)
         devices.append(ET.XML(pci_host_dev))
+if CPU is not None and CPU.isnumeric():
+    root.find('vcpu').text = CPU
+    root.remove(root.find("cpu"))
+    cpu = f"""
+    <cpu mode='host-passthrough' check='none' migratable='on'>
+        <topology sockets='1' dies='1' cores='1' threads='{CPU}'/>
+    </cpu>
+    """
+    root.append(ET.XML(cpu))
+if RAM is not None:
+    for i in range(0, 1):
+        m, v = root.find('memory'), None
+        if RAM[-1] == "G" or RAM[-1] == "M" or RAM[-1] == "K":
+            unit = RAM[-1]
+            v = m.text = RAM[:-1]
+        elif RAM.isnumeric():
+            unit = 'G'
+            v = m.text = RAM
+        else:
+            break
+        m.set('unit', f'{unit}iB')
+        m = root.find('currentMemory')
+        m.text = v
+        m.set('unit', f'{unit}iB')
+if VGPU is not None:
+    tmpl = environment.get_template("vgpu.xml")
+    vg = tmpl.render( uuid = VGPU )
+    print(vg)
+    devices.append(ET.XML(vg))
 
+if PASS is not None:
+    devices.find('graphics').set('passwd', PASS)
 tree.write(sys.argv[2])
 pf_script = "/pf.sh"
 if PORT is None:

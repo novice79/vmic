@@ -15,4 +15,4 @@ WORKDIR /vms
 # COPY macos12 .
 EXPOSE 22 5900
 
-ENTRYPOINT ["/lib/systemd/systemd"]
+ENTRYPOINT ["/init.sh"]
