@@ -26,13 +26,13 @@ for x in *.xml; do
 done
 rm -f $mx
 for i in $(virsh list --name --all); do 
-    echo "start vm $i"
+    echo "starting vm $i , please wait ..."
     virsh start $i; 
 done
 echo "----------list vms----------"
 virsh list --all
 
-source /pf.sh
+[ -z "$BRIDGE" ] && source /pf.sh
 
 while [ 1 ]; do
     sleep 2

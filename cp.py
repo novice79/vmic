@@ -10,7 +10,7 @@ if len(sys.argv) != 3:
     print("Need in/out xml file name to process")
     sys.exit(1)
 PCI, USB, PORT, CPU, RAM, VGPU = None, None, None, None, None, None
-PASS = None
+PASS, UI_PORT, BRIDGE = None, None, None
 env = open('/proc/1/environ', 'r')
 for e in env.read().split("\0"):
     kv = e.split('=')
@@ -36,6 +36,13 @@ for e in env.read().split("\0"):
     if kv[0] == 'PASS':
         PASS = kv[1]
         print("PASS=" + PASS)
+    if kv[0] == 'UI_PORT':
+        UI_PORT = kv[1]
+        print("UI_PORT=" + UI_PORT)
+    if kv[0] == 'BRIDGE':
+        BRIDGE = kv[1]
+        print("BRIDGE=" + BRIDGE)
+    
 env.close()
 
 vm_path = "/vms/"
@@ -69,18 +76,19 @@ if nic is not None:
 
 br = root.find('devices/interface/source')
 if br is not None:
-    print("%s--->%s" % (br.get('bridge'), 'virbr0'))
-    br.set('bridge', 'virbr0')
+    br_name = 'virbr0' if BRIDGE is None else BRIDGE
+    print("%s--->%s" % (br.get('bridge'), br_name))
+    br.set('bridge', br_name)
 
 devices = root.find('devices')
 for d in root.findall('./devices/hostdev'):
     devices.remove(d)
 
-for c in devices:
-    # ga stand for guest address
-    ga = c.find('address')
-    if ga is not None:
-        c.remove(ga)
+# for c in devices:
+#     # ga stand for guest address
+#     ga = c.find('address')
+#     if ga is not None:
+#         c.remove(ga)
 
 environment = Environment(loader=FileSystemLoader("/tmpl/"))
 # -e PCI='01:00.0.on 01:00.1' -e USB='8087:0a2a 04f2:b512'
@@ -93,7 +101,9 @@ if PCI is not None:
             bus = pc[0],
             slot = pc[1],
             func = pc[2],
-            mf = 'on' if len(pc) > 3 and pc[3] == 'on' else 'off'
+            # in case target address conflict, so skip set address
+            mf = 'off'
+            # mf = 'on' if len(pc) > 3 and pc[3] == 'on' else 'off'
         )
         print(pci_host_dev)
         devices.append(ET.XML(pci_host_dev))
@@ -141,6 +151,10 @@ if VGPU is not None:
 
 if PASS is not None:
     devices.find('graphics').set('passwd', PASS)
+if UI_PORT is not None:
+    devices.find('graphics').set('port', UI_PORT)
+    devices.find('graphics').set('autoport', 'no')
+    
 tree.write(sys.argv[2])
 pf_script = "/pf.sh"
 if PORT is None:
