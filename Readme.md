@@ -1,4 +1,4 @@
-# VM in Container
+# This is for kvm+libvirt virtual machine running in docker container
 
 Run preinstalled kvm os[xml + qcow2 files] in container
 
@@ -76,4 +76,18 @@ and then use vnc/remote viewer connect to host 5900 port
 
     docker logs vmic 
 
-    
+# There are some prepacked os container novice/vmic:[winxp_zh/win7x64_zh/win11], you can run it without mount /vms directory, like this:
+
+    docker run \
+    --privileged \
+    -e CPU='2' \
+    -e RAM='2G' \
+    -e PORT='3389' \
+    -d --name winxp \
+    --cgroupns=host \
+    -v /run/udev:/run/udev:ro \
+    -v /dev/kvm:/dev/kvm \
+    -v /dev/bus/usb:/dev/bus/usb \
+    -p 5900:5900 \
+    -p 3389:3389 \
+    novice/vmic:winxp_zh
