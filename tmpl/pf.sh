@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+echo "get guest vm nat ip address, please wait ..."
 while [ 1 ]; do
     sleep 1
     vm_ip=$(virsh net-dhcp-leases default | awk 'FNR == 3 {print $5}')
@@ -14,3 +15,7 @@ while [ 1 ]; do
         break
     fi
 done
+
+if [ $sd -eq 1 ]; then
+    echo "todo: ssh or winrm into guest to execute mount samba path command"
+fi

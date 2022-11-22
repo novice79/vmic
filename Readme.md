@@ -76,7 +76,16 @@ and then use vnc/remote viewer connect to host 5900 port
 
     docker logs vmic 
 
-# There are some prepacked os container novice/vmic:[winxp_zh/win7x64_zh/win11], you can run it without mount /vms directory, like this:
+# There are some prepacked os container novice/vmic: 
+
+- novice/winxp_zh
+- novice/win7x86_en
+- novice/win7x64_zh
+- novice/win11_en 
+
+default username/password: novice/nv
+
+you can run it without mount /vms directory, some thing like this:
 
     docker run \
     --privileged \
@@ -91,3 +100,5 @@ and then use vnc/remote viewer connect to host 5900 port
     -p 5900:5900 \
     -p 3389:3389 \
     novice/vmic:winxp_zh
+
+And then vnc/rdp (default: 5900/3389) into it
