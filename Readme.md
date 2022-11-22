@@ -76,12 +76,12 @@ and then use vnc/remote viewer connect to host 5900 port
 
     docker logs vmic 
 
-# There are some prepacked os container novice/vmic: 
+# There are some prepacked os container  
 
-- novice/winxp_zh
-- novice/win7x86_en
-- novice/win7x64_zh
-- novice/win11_en 
+- novice/vmic:winxp_zh
+- novice/vmic:win7x86_en
+- novice/vmic:win7x64_zh
+- novice/vmic:win11_en 
 
 default username/password: novice/nv
 
