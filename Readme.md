@@ -82,6 +82,7 @@ and then use vnc/remote viewer connect to host 5900 port
 - novice/vmic:win7x86_en
 - novice/vmic:win7x64_zh
 - novice/vmic:win11_en 
+- novice/vmic:ubdt      *ubuntu 22.04 desktop* 
 
 default username/password: novice/nv
 

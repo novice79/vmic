@@ -17,5 +17,6 @@ while [ 1 ]; do
 done
 
 if [ $sd -eq 1 ]; then
-    echo "todo: ssh or winrm into guest to execute mount samba path command"
+    # echo "todo: ssh or winrm into guest to execute mount samba path command"
+    [ -x /post_setup.sh ] && /post_setup.sh
 fi
